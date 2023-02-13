@@ -13,10 +13,12 @@ import { CardName } from '@/components/CardName';
 export default function Home() {
   const [newName, setNewName] = useState('')
   const [names, setNames] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const regex = new RegExp(/^[A-Za-z\s]*$/, 'i')
 
   useEffect(() => {
+    setIsLoading(true)
     const res = query(collection(db, 'argonautes'), orderBy('createdAt', 'desc'));
     onSnapshot(res, (querySnapchot) => {
       let nameList = [];
@@ -24,6 +26,7 @@ export default function Home() {
         nameList.push({ id: doc.id, ...doc.data() })
       })
       setNames(nameList);
+      setIsLoading(false)
     });
   }, [])
 
@@ -80,9 +83,13 @@ export default function Home() {
         <h2>Membres de l'équipage</h2>
         <section className="member-list">
           {
-             names.map((name, i) => (
-              <CardName key={i} name={name} regex={regex} />
-             ))
+            !isLoading ? (
+                names.map((name, i) => (
+                <CardName key={i} name={name} regex={regex} />
+              ))
+             ) : (
+              <span className="loader"></span>
+             )
           }
         </section>
       </main>
